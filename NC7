@@ -1,0 +1,120 @@
+local player = game.Players.LocalPlayer
+local screenGui
+
+-- دالة لإظهار رسالة الإشعار
+local function showNotification(message)
+    local starterGui = game:GetService("StarterGui")
+    starterGui:SetCore("SendNotification", {
+        Title = "معلومات";
+        Text = message;
+        Duration = 5;
+    })
+end
+
+-- دالة لإنشاء واجهة المستخدم
+local function createUI()
+    if screenGui then
+        screenGui:Destroy()
+    end
+
+    screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+
+    -- إنشاء زر دائري لعرض الألوان
+    local showButton = Instance.new("TextButton", screenGui)
+    showButton.Size = UDim2.new(0, 50, 0, 50)
+    showButton.Position = UDim2.new(0, 10, 0, 10)
+    showButton.Text = "NC7"
+    showButton.TextScaled = true
+    showButton.BackgroundColor3 = Color3.new(0, 0, 0)
+    showButton.TextColor3 = Color3.new(1, 1, 1)
+    showButton.AutoButtonColor = false
+    showButton.BorderSizePixel = 0
+    showButton.BackgroundTransparency = 0.5
+    showButton.TextStrokeTransparency = 0
+    showButton.AnchorPoint = Vector2.new(0, 0)
+
+    -- إنشاء تأثير "Pulse"
+    local TweenService = game:GetService("TweenService")
+    local tweenInfo = TweenInfo.new(0.4, Enum.EasingStyle.Bounce, Enum.EasingDirection.InOut)
+    local tweenGoal = {
+        Size = UDim2.new(0, 70, 0, 70),
+        BackgroundTransparency = 0.2
+    }
+    local pulseTween = TweenService:Create(showButton, tweenInfo, tweenGoal)
+
+    -- إنشاء الألوان بشكل دائري
+    local colorFrame = Instance.new("Frame", screenGui)
+    colorFrame.Size = UDim2.new(0, 300, 0, 300)
+    colorFrame.Position = UDim2.new(0.5, -150, 0.5, -150)
+    colorFrame.BackgroundTransparency = 1
+    colorFrame.Visible = false
+
+    local colors = {
+        Color3.fromRGB(0, 0, 0),    -- أسود
+        Color3.fromRGB(255, 255, 255),  -- أبيض
+        Color3.fromRGB(0, 0, 255),    -- أزرق
+        Color3.fromRGB(255, 0, 0),    -- أحمر
+        Color3.fromRGB(255, 105, 180),  -- وردي
+        Color3.fromRGB(255, 255, 0),  -- أصفر
+        Color3.fromRGB(255, 165, 0),  -- برتقالي
+        Color3.fromRGB(128, 0, 128),  -- بنفسجي
+        Color3.fromRGB(128, 128, 128), -- رمادي
+        Color3.fromRGB(0, 255, 0)     -- أخضر
+    }
+
+    local angleIncrement = 360 / #colors
+    local radius = 100
+
+    for i, color in ipairs(colors) do
+        local button = Instance.new("TextButton", colorFrame)
+        button.Size = UDim2.new(0, 50, 0, 50)
+        button.Position = UDim2.new(0.5, radius * math.cos(math.rad(i * angleIncrement)), 0.5, radius * math.sin(math.rad(i * angleIncrement)))
+        button.AnchorPoint = Vector2.new(0.5, 0.5)
+        button.BackgroundColor3 = color
+        button.BorderSizePixel = 2
+        button.BorderColor3 = Color3.fromRGB(255, 255, 255)
+        button.AutoButtonColor = false
+        button.Text = ""
+        button.MouseButton1Click:Connect(function()
+            local character = player.Character
+            if character then
+                for _, part in ipairs(character:GetChildren()) do
+                    if part:IsA("BasePart") then
+                        part.Color = color
+                    end
+                end
+            end
+        end)
+    end
+
+    -- دالة لتبديل رؤية الألوان
+    local function toggleColorFrame()
+        colorFrame.Visible = not colorFrame.Visible
+    end
+
+    -- دالة لتشغيل التأثير "Pulse"
+    local function playPulseEffect()
+        pulseTween:Play()
+        pulseTween.Completed:Connect(function()
+            showButton.Size = UDim2.new(0, 50, 0, 50)
+            showButton.BackgroundTransparency = 0.5
+        end)
+    end
+
+    -- ربط الأحداث
+    showButton.MouseButton1Click:Connect(function()
+        playPulseEffect()
+        toggleColorFrame()
+    end)
+end
+
+-- عرض رسالة الإشعار عند بدء تشغيل السكربت
+showNotification("تم صنع هذا السكربت بواسطة سيرفر NC7")
+
+-- إعادة إنشاء الواجهة عند إضافة شخصية جديدة
+player.CharacterAdded:Connect(createUI)
+
+-- إنشاء الواجهة عند بدء اللعبة
+if player.Character then
+    createUI()
+end
